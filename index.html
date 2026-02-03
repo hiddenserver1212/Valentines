@@ -66,7 +66,7 @@
     }
 
     .card {
-      width: min(620px, 92vw);
+      width: min(640px, 92vw);
       padding: clamp(20px, 3.6vw, 36px);
       border-radius: 28px;
       background: var(--card-bg);
@@ -75,6 +75,7 @@
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.55);
       position: relative;
+      overflow: hidden;
       transform-style: preserve-3d;
       transition: transform 120ms ease;
     }
@@ -98,7 +99,7 @@
 
     .stage {
       position: relative;
-      height: clamp(140px, 18vw, 170px);
+      height: clamp(150px, 18vw, 175px);
       border-radius: 22px;
       background: rgba(255, 255, 255, 0.6);
       border: 1px dashed rgba(255, 77, 141, 0.35);
@@ -113,7 +114,7 @@
       border: none;
       cursor: pointer;
       user-select: none;
-      transition: transform 140ms ease, box-shadow 180ms ease, filter 180ms ease;
+      transition: transform 140ms ease, box-shadow 180ms ease, filter 180ms ease, opacity 220ms ease;
       -webkit-tap-highlight-color: transparent;
       font-family: "Libre Baskerville", serif;
       position: relative;
@@ -161,13 +162,13 @@
       color: #3b1b26;
       border: 1px solid rgba(0, 0, 0, 0.12);
       box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
-      transition: left 110ms ease, top 110ms ease, transform 110ms ease;
+      transition: left 110ms ease, top 110ms ease, transform 110ms ease, opacity 220ms ease;
     }
 
     .result {
       margin-top: 18px;
       font-weight: 700;
-      min-height: 34px;
+      min-height: 36px;
       font-size: clamp(14px, 2vw, 16px);
     }
 
@@ -191,11 +192,96 @@
       to { transform: translateY(-120vh) rotate(120deg); opacity: 0; }
     }
 
+    /* Valentine letter reveal */
+    .letter {
+      margin-top: 18px;
+      display: none;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(255, 77, 141, 0.22);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .letter h2 {
+      margin: 0 0 10px;
+      font-family: "Playfair Display", serif;
+      font-size: 22px;
+      color: var(--headline);
+    }
+
+    .letter p {
+      margin: 0 0 10px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .signature {
+      margin-top: 10px;
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    /* tear effect using a moving mask-like overlay */
+    .tear {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(20px 18px at 10% 50%, rgba(255,255,255,0) 60%, rgba(255,255,255,.95) 62%),
+        radial-gradient(22px 18px at 24% 52%, rgba(255,255,255,0) 60%, rgba(255,255,255,.95) 62%),
+        radial-gradient(18px 16px at 38% 49%, rgba(255,255,255,0) 60%, rgba(255,255,255,.95) 62%),
+        radial-gradient(22px 18px at 52% 52%, rgba(255,255,255,0) 60%, rgba(255,255,255,.95) 62%),
+        radial-gradient(18px 16px at 66% 48%, rgba(255,255,255,0) 60%, rgba(255,255,255,.95) 62%),
+        radial-gradient(22px 18px at 80% 52%, rgba(255,255,255,0) 60%, rgba(255,255,255,.95) 62%),
+        radial-gradient(18px 16px at 92% 49%, rgba(255,255,255,0) 60%, rgba(255,255,255,.95) 62%);
+      opacity: 0;
+      transform: translateX(-110%);
+      pointer-events: none;
+      filter: blur(0.2px);
+    }
+
+    .letter.reveal {
+      display: block;
+      animation: letterIn 520ms ease forwards;
+    }
+
+    @keyframes letterIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .letter.reveal .tear {
+      opacity: 1;
+      animation: tearSweep 700ms ease forwards;
+    }
+
+    @keyframes tearSweep {
+      0% { transform: translateX(-110%); opacity: 0.0; }
+      20% { opacity: 0.85; }
+      100% { transform: translateX(110%); opacity: 0.0; }
+    }
+
+    /* hide stage on yes */
+    .stage.fade-out {
+      animation: stageOut 520ms ease forwards;
+    }
+
+    @keyframes stageOut {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.98); height: 0px; margin-top: 0; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       body, .blob, .yes.pulse { animation: none !important; }
       .card { transition: none; transform: none !important; }
       .no { transition: none; }
       .yes::after { transition: none; }
+      .stage.fade-out, .letter.reveal { animation: none !important; }
+      .letter.reveal .tear { animation: none !important; opacity: 0 !important; }
     }
   </style>
 </head>
@@ -218,6 +304,23 @@
 
     <div class="result" id="result" aria-live="polite"></div>
     <div class="meta" id="meta">Tip: hover “No” if you enjoy chaos (tap on mobile).</div>
+
+    <section class="letter" id="letter" aria-label="Love letter">
+      <div class="tear" aria-hidden="true"></div>
+      <h2>Official Valentine Confirmation</h2>
+      <p>
+        Congratulations. You have successfully accepted the role of
+        <strong>My Valentine</strong>.
+      </p>
+      <p>
+        Your compensation package includes: unlimited forehead kisses, priority cuddles,
+        and me pretending I did not already plan the entire date.
+      </p>
+      <p>
+        I like you a lot. Like, embarrassingly.
+      </p>
+      <p class="signature">Love, your favorite person 💖</p>
+    </section>
   </main>
 
   <script>
@@ -227,20 +330,18 @@
     const yesBtn = document.getElementById("yesBtn");
     const result = document.getElementById("result");
     const meta = document.getElementById("meta");
+    const letter = document.getElementById("letter");
 
     let heartsTimer = null;
     let lineIndex = 0;
 
     const hoverLines = [
       "Whoa. Not even going to hear me out?",
-      "That button is temporarily unavailable. Like my ability to act normal around you.",
-      "If you hit “No,” I’m telling the group chat you panicked.",
       "Plot twist: the “No” button has trust issues.",
+      "If you hit “No,” I’m telling the group chat you panicked.",
       "Come on. I already picked our vibe for the night.",
-      "You’re really going to make me beg? In 2026?",
-      "The “No” button is running because it knows we’re cute.",
-      "Do not press that. It bites.",
-      "I respect your choices. This button does not.",
+      "You’re really going to make me beg?",
+      "This button is fast because it knows we’re cute.",
       "If you want to say no, you’ll have to catch it first.",
       "Be serious. Look how romantic this font is."
     ];
@@ -270,7 +371,7 @@
       noBtn.style.transform = "translate(0,0)";
     }
 
-    // Subtle card tilt on pointer devices
+    // subtle tilt on pointer devices
     function tiltCard(e) {
       const r = card.getBoundingClientRect();
       const px = (e.clientX - r.left) / r.width;
@@ -285,14 +386,12 @@
       card.style.transform = "rotateX(0deg) rotateY(0deg)";
     }
 
-    // Desktop: hover triggers a line + dodge
     noBtn.addEventListener("mouseenter", () => {
       if (noBtn.disabled) return;
       showNextLine();
       moveNo();
     });
 
-    // Mobile: touch triggers a line + dodge
     noBtn.addEventListener("touchstart", (e) => {
       if (noBtn.disabled) return;
       e.preventDefault();
@@ -300,7 +399,6 @@
       moveNo();
     }, { passive: false });
 
-    // If click somehow lands, still dodge and tease
     noBtn.addEventListener("click", () => {
       if (noBtn.disabled) return;
       result.textContent = "Nice try. The “No” option has left the building.";
@@ -308,14 +406,26 @@
     });
 
     yesBtn.addEventListener("click", () => {
-      result.textContent = "Thank you for your cooperation, My HR Baddie 💖";
-      meta.textContent = "This interaction may be documented for quality assurance.";
-      yesBtn.classList.remove("pulse");
+      // stop the playful prompt text
+      result.textContent = "Approved. Printing your love letter...";
+      meta.textContent = "";
 
+      // disable buttons and remove pulse
+      yesBtn.classList.remove("pulse");
       yesBtn.disabled = true;
       noBtn.disabled = true;
 
-      startHearts();
+      // fade out the entire stage (buttons area)
+      stage.classList.add("fade-out");
+
+      // reveal letter after stage anim starts
+      setTimeout(() => {
+        letter.classList.add("reveal");
+        result.textContent = "";
+        startHearts();
+      }, 320);
+
+      // reset card tilt to calm it down
       card.style.transform = "rotateX(0deg) rotateY(0deg)";
     });
 
@@ -335,12 +445,10 @@
     }
 
     window.addEventListener("load", () => {
-      // Initialize No in a stable position; later moves set px values
       noBtn.style.left = "65%";
       noBtn.style.top = "50%";
       noBtn.style.transform = "translate(-50%, -50%)";
 
-      // Tilt only on pointer devices
       if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
         document.addEventListener("mousemove", tiltCard);
         card.addEventListener("mouseleave", resetTilt);
