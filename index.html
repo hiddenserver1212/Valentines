@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Valentine</title>
 
-  <!-- Romantic fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,600&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
@@ -23,7 +22,6 @@
       --muted: #9a5b72;
 
       --shadow: 0 28px 90px rgba(0, 0, 0, 0.14);
-      --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.10);
     }
 
     * { box-sizing: border-box; }
@@ -47,7 +45,6 @@
       100% { background-position: 0% 50%; }
     }
 
-    /* subtle glow blobs */
     .blob {
       position: fixed;
       width: 520px;
@@ -56,7 +53,6 @@
       filter: blur(60px);
       opacity: 0.22;
       pointer-events: none;
-      transform: translate3d(0,0,0);
       mix-blend-mode: soft-light;
       animation: blob 12s ease-in-out infinite;
     }
@@ -83,7 +79,6 @@
       transition: transform 120ms ease;
     }
 
-    /* responsive type */
     h1 {
       margin: 0 0 12px;
       font-family: "Playfair Display", serif;
@@ -140,16 +135,12 @@
       overflow: hidden;
     }
 
-    /* gentle pulse to feel "alive" */
-    .yes.pulse {
-      animation: pulse 1.6s ease-in-out infinite;
-    }
+    .yes.pulse { animation: pulse 1.6s ease-in-out infinite; }
     @keyframes pulse {
       0%, 100% { transform: translateY(0); box-shadow: 0 14px 36px rgba(255, 92, 156, 0.45); }
       50% { transform: translateY(-2px); box-shadow: 0 18px 46px rgba(255, 92, 156, 0.55); }
     }
 
-    /* glossy sweep on hover */
     .yes::after {
       content: "";
       position: absolute;
@@ -176,7 +167,7 @@
     .result {
       margin-top: 18px;
       font-weight: 700;
-      min-height: 28px;
+      min-height: 34px;
       font-size: clamp(14px, 2vw, 16px);
     }
 
@@ -186,7 +177,6 @@
       color: var(--muted);
     }
 
-    /* floating hearts */
     .heart {
       position: fixed;
       bottom: -24px;
@@ -201,10 +191,9 @@
       to { transform: translateY(-120vh) rotate(120deg); opacity: 0; }
     }
 
-    /* accessibility: reduce motion */
     @media (prefers-reduced-motion: reduce) {
       body, .blob, .yes.pulse { animation: none !important; }
-      .card { transition: none; }
+      .card { transition: none; transform: none !important; }
       .no { transition: none; }
       .yes::after { transition: none; }
     }
@@ -218,7 +207,7 @@
 
   <main class="card" id="card" aria-label="Valentine card">
     <h1>Will you be my Valentine, <em>My HR Baddie</em>?</h1>
-    <p class="subtitle">This request has been reviewed and approved by Compliance.</p>
+    <p class="subtitle">I am asking nicely. The “No” button is being dramatic.</p>
 
     <section class="stage" id="stage" aria-label="Buttons area">
       <div class="yes-wrap">
@@ -228,7 +217,7 @@
     </section>
 
     <div class="result" id="result" aria-live="polite"></div>
-    <div class="meta" id="meta">Tip: try hovering “No” (or tapping it).</div>
+    <div class="meta" id="meta">Tip: hover “No” if you enjoy chaos (tap on mobile).</div>
   </main>
 
   <script>
@@ -239,11 +228,30 @@
     const result = document.getElementById("result");
     const meta = document.getElementById("meta");
 
-    let dodges = 0;
     let heartsTimer = null;
+    let lineIndex = 0;
+
+    const hoverLines = [
+      "Whoa. Not even going to hear me out?",
+      "That button is temporarily unavailable. Like my ability to act normal around you.",
+      "If you hit “No,” I’m telling the group chat you panicked.",
+      "Plot twist: the “No” button has trust issues.",
+      "Come on. I already picked our vibe for the night.",
+      "You’re really going to make me beg? In 2026?",
+      "The “No” button is running because it knows we’re cute.",
+      "Do not press that. It bites.",
+      "I respect your choices. This button does not.",
+      "If you want to say no, you’ll have to catch it first.",
+      "Be serious. Look how romantic this font is."
+    ];
 
     function clamp(n, min, max) {
       return Math.max(min, Math.min(max, n));
+    }
+
+    function showNextLine() {
+      result.textContent = hoverLines[lineIndex % hoverLines.length];
+      lineIndex += 1;
     }
 
     function moveNo() {
@@ -260,14 +268,9 @@
       noBtn.style.left = `${x}px`;
       noBtn.style.top = `${y}px`;
       noBtn.style.transform = "translate(0,0)";
-
-      dodges++;
-      if (dodges === 3) result.textContent = "Please select a compliant response.";
-      if (dodges === 6) result.textContent = "This action is under review.";
-      if (dodges === 9) result.textContent = "A report has been filed (lovingly).";
     }
 
-    // Make the card feel responsive to cursor (subtle tilt)
+    // Subtle card tilt on pointer devices
     function tiltCard(e) {
       const r = card.getBoundingClientRect();
       const px = (e.clientX - r.left) / r.width;
@@ -278,24 +281,30 @@
 
       card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
     }
-
     function resetTilt() {
       card.style.transform = "rotateX(0deg) rotateY(0deg)";
     }
 
-    // Desktop: dodge on hover
-    noBtn.addEventListener("mouseenter", () => moveNo());
+    // Desktop: hover triggers a line + dodge
+    noBtn.addEventListener("mouseenter", () => {
+      if (noBtn.disabled) return;
+      showNextLine();
+      moveNo();
+    });
 
-    // Mobile: dodge on touch
+    // Mobile: touch triggers a line + dodge
     noBtn.addEventListener("touchstart", (e) => {
+      if (noBtn.disabled) return;
       e.preventDefault();
+      showNextLine();
       moveNo();
     }, { passive: false });
 
-    // If click somehow lands, still dodge
+    // If click somehow lands, still dodge and tease
     noBtn.addEventListener("click", () => {
+      if (noBtn.disabled) return;
+      result.textContent = "Nice try. The “No” option has left the building.";
       moveNo();
-      result.textContent = "Nice try. Please resubmit your response.";
     });
 
     yesBtn.addEventListener("click", () => {
@@ -307,6 +316,7 @@
       noBtn.disabled = true;
 
       startHearts();
+      card.style.transform = "rotateX(0deg) rotateY(0deg)";
     });
 
     function startHearts() {
@@ -321,16 +331,16 @@
         h.style.animationDuration = 7 + Math.random() * 6 + "s";
         document.body.appendChild(h);
         setTimeout(() => h.remove(), 16000);
-      }, 350);
+      }, 320);
     }
 
-    // Initialize No position in px so later moves are consistent
     window.addEventListener("load", () => {
+      // Initialize No in a stable position; later moves set px values
       noBtn.style.left = "65%";
       noBtn.style.top = "50%";
       noBtn.style.transform = "translate(-50%, -50%)";
 
-      // Only add tilt on pointer devices
+      // Tilt only on pointer devices
       if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
         document.addEventListener("mousemove", tiltCard);
         card.addEventListener("mouseleave", resetTilt);
