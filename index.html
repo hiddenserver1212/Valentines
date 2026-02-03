@@ -16,13 +16,14 @@
       --pink-2: #ff7fb0;
       --pink-3: #ffd1e1;
 
-      --card-bg: rgba(255, 255, 255, 0.88);
+      --card-bg: rgba(255, 255, 255, 0.86);
 
       --headline: #5b2436;
       --text: #6a2f42;
       --muted: #9a5b72;
 
       --shadow: 0 28px 90px rgba(0, 0, 0, 0.14);
+      --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.10);
     }
 
     * { box-sizing: border-box; }
@@ -46,36 +47,63 @@
       100% { background-position: 0% 50%; }
     }
 
+    /* subtle glow blobs */
+    .blob {
+      position: fixed;
+      width: 520px;
+      height: 520px;
+      border-radius: 999px;
+      filter: blur(60px);
+      opacity: 0.22;
+      pointer-events: none;
+      transform: translate3d(0,0,0);
+      mix-blend-mode: soft-light;
+      animation: blob 12s ease-in-out infinite;
+    }
+    .blob.one { left: -180px; top: -200px; background: #ffffff; }
+    .blob.two { right: -200px; bottom: -220px; background: #ffb3c6; animation-delay: -4s; }
+    .blob.three { left: 20%; bottom: -260px; background: #ffd1e1; animation-delay: -7s; }
+
+    @keyframes blob {
+      0%, 100% { transform: translate3d(0,0,0) scale(1); }
+      50% { transform: translate3d(40px, -30px, 0) scale(1.08); }
+    }
+
     .card {
-      width: min(560px, 92vw);
-      padding: 36px 32px 28px;
+      width: min(620px, 92vw);
+      padding: clamp(20px, 3.6vw, 36px);
       border-radius: 28px;
       background: var(--card-bg);
       box-shadow: var(--shadow);
       text-align: center;
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.55);
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 120ms ease;
     }
 
+    /* responsive type */
     h1 {
-      margin: 0 0 14px;
+      margin: 0 0 12px;
       font-family: "Playfair Display", serif;
-      font-size: clamp(28px, 4vw, 40px);
+      font-size: clamp(26px, 4.2vw, 42px);
       font-weight: 600;
       letter-spacing: -0.01em;
       color: var(--headline);
+      line-height: 1.12;
     }
 
-    p {
-      margin: 0 0 24px;
-      font-size: 15px;
+    .subtitle {
+      margin: 0 0 22px;
+      font-size: clamp(13px, 1.8vw, 15px);
       line-height: 1.45;
       color: var(--muted);
     }
 
     .stage {
       position: relative;
-      height: 160px;
+      height: clamp(140px, 18vw, 170px);
       border-radius: 22px;
       background: rgba(255, 255, 255, 0.6);
       border: 1px dashed rgba(255, 77, 141, 0.35);
@@ -90,9 +118,10 @@
       border: none;
       cursor: pointer;
       user-select: none;
-      transition: transform 120ms ease, box-shadow 140ms ease;
+      transition: transform 140ms ease, box-shadow 180ms ease, filter 180ms ease;
       -webkit-tap-highlight-color: transparent;
       font-family: "Libre Baskerville", serif;
+      position: relative;
     }
 
     .btn:active { transform: scale(0.96); }
@@ -108,11 +137,29 @@
       background: linear-gradient(135deg, #ff5c9c, #ff8fb8);
       color: white;
       box-shadow: 0 14px 36px rgba(255, 92, 156, 0.45);
+      overflow: hidden;
     }
 
-    .yes:hover {
-      transform: translateY(-2px);
+    /* gentle pulse to feel "alive" */
+    .yes.pulse {
+      animation: pulse 1.6s ease-in-out infinite;
     }
+    @keyframes pulse {
+      0%, 100% { transform: translateY(0); box-shadow: 0 14px 36px rgba(255, 92, 156, 0.45); }
+      50% { transform: translateY(-2px); box-shadow: 0 18px 46px rgba(255, 92, 156, 0.55); }
+    }
+
+    /* glossy sweep on hover */
+    .yes::after {
+      content: "";
+      position: absolute;
+      inset: -40% -60%;
+      background: linear-gradient(115deg, transparent 45%, rgba(255,255,255,.55) 52%, transparent 60%);
+      transform: translateX(-60%) rotate(10deg);
+      transition: transform 500ms ease;
+      pointer-events: none;
+    }
+    .yes:hover::after { transform: translateX(25%) rotate(10deg); }
 
     .no {
       position: absolute;
@@ -123,13 +170,14 @@
       color: #3b1b26;
       border: 1px solid rgba(0, 0, 0, 0.12);
       box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+      transition: left 110ms ease, top 110ms ease, transform 110ms ease;
     }
 
     .result {
-      margin-top: 20px;
+      margin-top: 18px;
       font-weight: 700;
-      min-height: 26px;
-      font-size: 16px;
+      min-height: 28px;
+      font-size: clamp(14px, 2vw, 16px);
     }
 
     .meta {
@@ -138,6 +186,7 @@
       color: var(--muted);
     }
 
+    /* floating hearts */
     .heart {
       position: fixed;
       bottom: -24px;
@@ -151,27 +200,40 @@
       from { transform: translateY(0) rotate(0deg); opacity: 0.16; }
       to { transform: translateY(-120vh) rotate(120deg); opacity: 0; }
     }
+
+    /* accessibility: reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      body, .blob, .yes.pulse { animation: none !important; }
+      .card { transition: none; }
+      .no { transition: none; }
+      .yes::after { transition: none; }
+    }
   </style>
 </head>
 
 <body>
-  <main class="card">
-    <h1>Will you be my Valentine, <em>My HR Baddie</em>?</h1>
-    <p>This request has been reviewed and approved by Compliance.</p>
+  <div class="blob one" aria-hidden="true"></div>
+  <div class="blob two" aria-hidden="true"></div>
+  <div class="blob three" aria-hidden="true"></div>
 
-    <section class="stage" id="stage">
+  <main class="card" id="card" aria-label="Valentine card">
+    <h1>Will you be my Valentine, <em>My HR Baddie</em>?</h1>
+    <p class="subtitle">This request has been reviewed and approved by Compliance.</p>
+
+    <section class="stage" id="stage" aria-label="Buttons area">
       <div class="yes-wrap">
-        <button class="btn yes" id="yesBtn" type="button">Yes</button>
+        <button class="btn yes pulse" id="yesBtn" type="button">Yes</button>
       </div>
       <button class="btn no" id="noBtn" type="button">No</button>
     </section>
 
-    <div class="result" id="result"></div>
+    <div class="result" id="result" aria-live="polite"></div>
     <div class="meta" id="meta">Tip: try hovering “No” (or tapping it).</div>
   </main>
 
   <script>
     const stage = document.getElementById("stage");
+    const card = document.getElementById("card");
     const noBtn = document.getElementById("noBtn");
     const yesBtn = document.getElementById("yesBtn");
     const result = document.getElementById("result");
@@ -189,51 +251,91 @@
       const b = noBtn.getBoundingClientRect();
       const pad = 10;
 
-      const x = clamp(Math.random() * (s.width - b.width), pad, s.width - b.width - pad);
-      const y = clamp(Math.random() * (s.height - b.height), pad, s.height - b.height - pad);
+      const maxX = s.width - b.width - pad;
+      const maxY = s.height - b.height - pad;
+
+      const x = clamp(Math.random() * maxX, pad, maxX);
+      const y = clamp(Math.random() * maxY, pad, maxY);
 
       noBtn.style.left = `${x}px`;
       noBtn.style.top = `${y}px`;
       noBtn.style.transform = "translate(0,0)";
 
       dodges++;
-      if (dodges === 4) result.textContent = "Please select a compliant response.";
-      if (dodges === 8) result.textContent = "This action is under review.";
+      if (dodges === 3) result.textContent = "Please select a compliant response.";
+      if (dodges === 6) result.textContent = "This action is under review.";
+      if (dodges === 9) result.textContent = "A report has been filed (lovingly).";
     }
 
+    // Make the card feel responsive to cursor (subtle tilt)
+    function tiltCard(e) {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+
+      const rotY = (px - 0.5) * 8;
+      const rotX = (0.5 - py) * 8;
+
+      card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    }
+
+    function resetTilt() {
+      card.style.transform = "rotateX(0deg) rotateY(0deg)";
+    }
+
+    // Desktop: dodge on hover
     noBtn.addEventListener("mouseenter", () => moveNo());
-    noBtn.addEventListener("touchstart", e => {
+
+    // Mobile: dodge on touch
+    noBtn.addEventListener("touchstart", (e) => {
       e.preventDefault();
       moveNo();
     }, { passive: false });
 
+    // If click somehow lands, still dodge
+    noBtn.addEventListener("click", () => {
+      moveNo();
+      result.textContent = "Nice try. Please resubmit your response.";
+    });
+
     yesBtn.addEventListener("click", () => {
       result.textContent = "Thank you for your cooperation, My HR Baddie 💖";
       meta.textContent = "This interaction may be documented for quality assurance.";
+      yesBtn.classList.remove("pulse");
+
       yesBtn.disabled = true;
       noBtn.disabled = true;
+
       startHearts();
     });
 
     function startHearts() {
       if (heartsTimer) return;
-      const hearts = ["💖","💘","💕","❤️"];
+
+      const hearts = ["💖", "💘", "💕", "❤️"];
       heartsTimer = setInterval(() => {
         const h = document.createElement("div");
         h.className = "heart";
         h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
         h.style.left = Math.random() * 100 + "vw";
-        h.style.animationDuration = 8 + Math.random() * 6 + "s";
+        h.style.animationDuration = 7 + Math.random() * 6 + "s";
         document.body.appendChild(h);
         setTimeout(() => h.remove(), 16000);
-      }, 400);
+      }, 350);
     }
 
-    window.onload = () => {
+    // Initialize No position in px so later moves are consistent
+    window.addEventListener("load", () => {
       noBtn.style.left = "65%";
       noBtn.style.top = "50%";
       noBtn.style.transform = "translate(-50%, -50%)";
-    };
+
+      // Only add tilt on pointer devices
+      if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        document.addEventListener("mousemove", tiltCard);
+        card.addEventListener("mouseleave", resetTilt);
+      }
+    });
   </script>
 </body>
 </html>
